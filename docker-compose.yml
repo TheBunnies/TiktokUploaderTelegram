@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  tiktok-bot:
+    container_name: "tiktok-tg-bot"
+    build: .
+    restart: unless-stopped
