@@ -15,7 +15,7 @@ var (
 func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if rgxTwitter.MatchString(update.Message.Text) {
 		link := utils.TrimURL(rgxTwitter.FindString(update.Message.Text))
-		log.Println("Started processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
+		log.Println("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
 		data := NewTwitterVideoDownloader(link)
 		file, err := data.Download()
