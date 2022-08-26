@@ -18,7 +18,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		link := utils.TrimURL(update.Message.Text)
 		link = utils.SanitizeTiktokUrl(link)
 
-		log.Println("Started processing tiktok request by " + link + " by " + utils.GetTelegramUserString(update.Message.From))
+		log.Println("Started processing tiktok request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
 		id, err := GetId(link)
 		if err != nil {

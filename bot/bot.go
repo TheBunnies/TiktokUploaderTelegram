@@ -34,30 +34,32 @@ func InitBot() {
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message != nil {
-			if update.Message.Chat.IsPrivate() && (strings.HasPrefix(update.Message.Text, "/help") || strings.HasPrefix(update.Message.Text, "/start")) {
-				log.Println(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
-				msg.ReplyToMessageID = update.Message.MessageID
-				bot.Send(msg)
-				continue
-			}
+			go func() {
+				if update.Message.Chat.IsPrivate() && (strings.HasPrefix(update.Message.Text, "/help") || strings.HasPrefix(update.Message.Text, "/start")) {
+					log.Println(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
+					msg.ReplyToMessageID = update.Message.MessageID
+					bot.Send(msg)
+					return
+				}
 
-			err = twitter.Handle(update, bot)
-			if err != nil {
-				log.Println("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err)
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
-				msg.ReplyToMessageID = update.Message.MessageID
-				bot.Send(msg)
-				continue
-			}
-			err = tiktok.Handle(update, bot)
-			if err != nil {
-				log.Println("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err)
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
-				msg.ReplyToMessageID = update.Message.MessageID
-				bot.Send(msg)
-				continue
-			}
+				err = twitter.Handle(update, bot)
+				if err != nil {
+					log.Println("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err)
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+					msg.ReplyToMessageID = update.Message.MessageID
+					bot.Send(msg)
+					return
+				}
+				err = tiktok.Handle(update, bot)
+				if err != nil {
+					log.Println("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err)
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+					msg.ReplyToMessageID = update.Message.MessageID
+					bot.Send(msg)
+					return
+				}
+			}()
 		}
 	}
 }

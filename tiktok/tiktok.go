@@ -40,6 +40,7 @@ func NewAwemeDetail(id uint64) (*AwemeDetail, error) {
 	}
 	client := &http.Client{
 		Transport: transport,
+		Timeout:   10 * time.Second,
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -86,7 +87,7 @@ func (a AwemeDetail) URL() (string, error) {
 func GetId(uri string) (string, error) {
 	url, _ := url.Parse(uri)
 	url.RawQuery = ""
-	url.Scheme = "http"
+	url.Scheme = "https"
 	resp, err := http.Get(url.String())
 	if err != nil {
 		return "", err
@@ -98,6 +99,7 @@ func GetId(uri string) (string, error) {
 	newUrl, _ := url.Parse(resp.Request.URL.String())
 	newUrl.RawQuery = ""
 	newUrl.Scheme = "http"
+
 	return utils.FileNameWithoutExtension(filepath.Base(newUrl.String())), nil
 }
 
