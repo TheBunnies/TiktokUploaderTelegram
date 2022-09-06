@@ -13,32 +13,28 @@ var (
 )
 
 func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
-	if rgxTwitter.MatchString(update.Message.Text) {
-		link := utils.TrimURL(rgxTwitter.FindString(update.Message.Text))
-		log.Println("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
+	link := utils.TrimURL(rgxTwitter.FindString(update.Message.Text))
+	log.Println("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
-		data := NewTwitterVideoDownloader(link)
-		file, err := data.Download()
-		if err != nil {
-			return err
-		}
-		media := tgbotapi.FilePath(file.Name())
-		video := tgbotapi.NewVideo(update.Message.From.ID, media)
-		video.ReplyToMessageID = update.Message.MessageID
+	data := NewTwitterVideoDownloader(link)
+	file, err := data.Download()
+	if err != nil {
+		return err
+	}
+	media := tgbotapi.FilePath(file.Name())
+	video := tgbotapi.NewVideo(update.Message.From.ID, media)
+	video.ReplyToMessageID = update.Message.MessageID
 
-		_, err = api.Send(video)
-		if err != nil {
-			file.Close()
-			os.Remove(file.Name())
-			return err
-		}
-
+	_, err = api.Send(video)
+	if err != nil {
 		file.Close()
 		os.Remove(file.Name())
-
-		log.Println("Finished processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
-	} else {
-
+		return err
 	}
+
+	file.Close()
+	os.Remove(file.Name())
+
+	log.Println("Finished processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
 	return nil
 }

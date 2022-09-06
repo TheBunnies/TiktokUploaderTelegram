@@ -14,50 +14,48 @@ var (
 )
 
 func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
-	if rgxTiktok.MatchString(update.Message.Text) {
-		link := utils.TrimURL(update.Message.Text)
-		link = utils.SanitizeTiktokUrl(link)
+	link := utils.TrimURL(rgxTiktok.FindString(update.Message.Text))
+	link = utils.SanitizeTiktokUrl(link)
 
-		log.Println("Started processing tiktok request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
+	log.Println("Started processing tiktok request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
-		id, err := GetId(link)
-		if err != nil {
-			return err
-		}
-		parsedId, err := Parse(id)
-		if err != nil {
-			return err
-		}
-		data, err := NewAwemeDetail(parsedId)
-		if err != nil {
-			return err
-		}
-		file, err := data.DownloadVideo()
-		if err != nil {
-			return err
-		}
-		message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
-			data.Author,
-			data.Duration(),
-			data.Time(),
-			data.Description()))
-		message.ReplyToMessageID = update.Message.MessageID
+	id, err := GetId(link)
+	if err != nil {
+		return err
+	}
+	parsedId, err := Parse(id)
+	if err != nil {
+		return err
+	}
+	data, err := NewAwemeDetail(parsedId)
+	if err != nil {
+		return err
+	}
+	file, err := data.DownloadVideo()
+	if err != nil {
+		return err
+	}
+	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
+		data.Author,
+		data.Duration(),
+		data.Time(),
+		data.Description()))
+	message.ReplyToMessageID = update.Message.MessageID
 
-		api.Send(message)
+	api.Send(message)
 
-		media := tgbotapi.FilePath(file.Name())
-		video := tgbotapi.NewVideo(update.Message.Chat.ID, media)
+	media := tgbotapi.FilePath(file.Name())
+	video := tgbotapi.NewVideo(update.Message.Chat.ID, media)
 
-		_, err = api.Send(video)
-		if err != nil {
-			file.Close()
-			os.Remove(file.Name())
-			return err
-		}
-
+	_, err = api.Send(video)
+	if err != nil {
 		file.Close()
 		os.Remove(file.Name())
-		log.Println("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
+		return err
 	}
+
+	file.Close()
+	os.Remove(file.Name())
+	log.Println("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
 	return nil
 }
