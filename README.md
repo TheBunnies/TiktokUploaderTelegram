@@ -7,6 +7,10 @@ All you have to do is to type a link in whatever chat bot is in
 2. Open **.env** and pass down your telegram bot token.
 3. Run `go run main.go` or build `go build .`
 
+## PostgreSQL database
+This bot uses a PostgreSQL database instance. Make sure to supply a connection string over your `.env` file.
+A new db instance can be created via `docker-compose` file or manual setup. All tables are automatically created by code once connected to a db.
+
 ## Proxying
 This bot supports proxying. Supply credentials in **.env** file or leave them empty if not needed.
 
