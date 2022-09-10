@@ -5,7 +5,7 @@ services:
     container_name: "tiktok-tg-bot"
     build: .
     depends_on:
-      - database
+      - db
     networks:
       - tg-network
     restart: unless-stopped
