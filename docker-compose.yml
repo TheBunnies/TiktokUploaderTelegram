@@ -4,7 +4,12 @@ services:
   tiktok-bot:
     container_name: "tiktok-tg-bot"
     build: .
+    depends_on:
+      - database
+    networks:
+      - tg-network
     restart: unless-stopped
+
   db:
     container_name: database-tg-bot
     image: postgres:latest
@@ -15,5 +20,11 @@ services:
       - POSTGRES_DB=tiktok-tg
     ports:
       - "6962:5432"
+    networks:
+      - tg-network
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+
+networks:
+  tg-network:
+    driver: bridge
