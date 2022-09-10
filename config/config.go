@@ -12,6 +12,7 @@ var (
 	Password = ""
 	Ip       = ""
 	Port     = ""
+	ConStr   = ""
 
 	ProxyUrl = ""
 )
@@ -26,6 +27,7 @@ func LoadEnv() {
 	Password = os.Getenv("PASSWORD")
 	Ip = os.Getenv("IP")
 	Port = os.Getenv("PORT")
+	ConStr = os.Getenv("CONSTR")
 
 	if User != "" && Password != "" && Ip != "" && Port != "" {
 		ProxyUrl = "http://" + User + ":" + Password + "@" + Ip + ":" + Port

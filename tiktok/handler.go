@@ -2,9 +2,9 @@ package tiktok
 
 import (
 	"fmt"
+	"github.com/TheBunnies/TiktokUploaderTelegram/db"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 	"os"
 	"regexp"
 )
@@ -17,7 +17,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	link := utils.TrimURL(rgxTiktok.FindString(update.Message.Text))
 	link = utils.SanitizeTiktokUrl(link)
 
-	log.Println("Started processing tiktok request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
+	db.DRIVER.LogInformation("Started processing tiktok request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
 	id, err := GetId(link)
 	if err != nil {
@@ -56,6 +56,6 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 
 	file.Close()
 	os.Remove(file.Name())
-	log.Println("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
+	db.DRIVER.LogInformation("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
 	return nil
 }

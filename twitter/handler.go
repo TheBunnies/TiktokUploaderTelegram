@@ -1,9 +1,9 @@
 package twitter
 
 import (
+	"github.com/TheBunnies/TiktokUploaderTelegram/db"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 	"os"
 	"regexp"
 )
@@ -14,7 +14,7 @@ var (
 
 func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	link := utils.TrimURL(rgxTwitter.FindString(update.Message.Text))
-	log.Println("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
+	db.DRIVER.LogInformation("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
 	data := NewTwitterVideoDownloader(link)
 	file, err := data.Download()
@@ -35,6 +35,6 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	file.Close()
 	os.Remove(file.Name())
 
-	log.Println("Finished processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
+	db.DRIVER.LogInformation("Finished processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
 	return nil
 }

@@ -5,3 +5,15 @@ services:
     container_name: "tiktok-tg-bot"
     build: .
     restart: unless-stopped
+  db:
+    container_name: database-tg-bot
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=tiktoktelegramforever
+      - POSTGRES_DB=tiktok-tg
+    ports:
+      - "6962:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

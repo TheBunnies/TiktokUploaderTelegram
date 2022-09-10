@@ -2,6 +2,7 @@ package bot
 
 import (
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
+	"github.com/TheBunnies/TiktokUploaderTelegram/db"
 	"github.com/TheBunnies/TiktokUploaderTelegram/tiktok"
 	"github.com/TheBunnies/TiktokUploaderTelegram/twitter"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
@@ -19,7 +20,6 @@ var (
 )
 
 func InitBot() {
-	config.LoadEnv()
 	bot, err := tgbotapi.NewBotAPI(config.Token)
 	if err != nil {
 		log.Panic(err)
@@ -27,7 +27,7 @@ func InitBot() {
 	Client = bot
 	bot.Debug = false
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	db.DRIVER.LogInformation("Authorized on account", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -37,7 +37,11 @@ func InitBot() {
 			continue
 		}
 		if update.Message.Chat.IsPrivate() && (strings.HasPrefix(update.Message.Text, "/help") || strings.HasPrefix(update.Message.Text, "/start")) {
-			log.Println(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
+			db.DRIVER.LogInformation(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
+			err = TryCreateUser(update.Message.From)
+			if err != nil {
+				db.DRIVER.LogError("Error while creating a user", err.Error())
+			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
 			msg.ReplyToMessageID = update.Message.MessageID
 			bot.Send(msg)
@@ -45,9 +49,13 @@ func InitBot() {
 		}
 		if rgxTwitter.MatchString(update.Message.Text) {
 			go func() {
+				err = TryCreateUser(update.Message.From)
+				if err != nil {
+					db.DRIVER.LogError("Error while creating a user", err.Error())
+				}
 				err = twitter.Handle(update, bot)
 				if err != nil {
-					log.Println("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err)
+					db.DRIVER.LogError("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err.Error())
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
 					msg.ReplyToMessageID = update.Message.MessageID
 					bot.Send(msg)
@@ -57,9 +65,13 @@ func InitBot() {
 		}
 		if rgxTiktok.MatchString(update.Message.Text) {
 			go func() {
+				err = TryCreateUser(update.Message.From)
+				if err != nil {
+					db.DRIVER.LogError("Error while creating a user", err.Error())
+				}
 				err = tiktok.Handle(update, bot)
 				if err != nil {
-					log.Println("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err)
+					db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
 					msg.ReplyToMessageID = update.Message.MessageID
 					bot.Send(msg)
@@ -68,4 +80,15 @@ func InitBot() {
 			}()
 		}
 	}
+}
+
+func TryCreateUser(user *tgbotapi.User) error {
+	exists, err := db.DRIVER.IsUserExists(user.ID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return db.DRIVER.CreateUser(user.ID, user.FirstName, user.LastName, user.UserName)
+	}
+	return nil
 }
