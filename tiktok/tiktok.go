@@ -28,6 +28,7 @@ func NewAwemeDetail(id uint64) (*AwemeDetail, error) {
 		return nil, err
 	}
 	req.URL.RawQuery = "aweme_id=" + strconv.FormatUint(id, 10)
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 
 	var transport *http.Transport
 	proxyUrl, err := url.Parse(config.ProxyUrl)

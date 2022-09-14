@@ -36,7 +36,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		return err
 	}
 	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
-		data.Author,
+		data.Author.Unique_ID,
 		data.Duration(),
 		data.Time(),
 		data.Description()))
