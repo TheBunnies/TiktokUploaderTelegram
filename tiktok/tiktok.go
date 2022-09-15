@@ -41,7 +41,7 @@ func NewAwemeDetail(id uint64) (*AwemeDetail, error) {
 	}
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   10 * time.Second,
+		Timeout:   30 * time.Second,
 	}
 	res, err := client.Do(req)
 	if err != nil {

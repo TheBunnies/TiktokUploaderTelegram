@@ -20,7 +20,7 @@ func NewTTVideoDetail(url string) (*TTVideoDetail, error) {
 		return nil, err
 	}
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 	res, err := client.Do(req)
 	if err != nil {
