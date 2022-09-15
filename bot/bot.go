@@ -73,7 +73,7 @@ func InitBot() {
 				err = ttvideo.Handle(update, bot)
 				if err != nil {
 					db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Tiktok requests are currently unavailable in the bot, we're investigating the issue and will inform you when it's finally going back. Thank you for your patience!")
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
 					msg.ReplyToMessageID = update.Message.MessageID
 					bot.Send(msg)
 					return
