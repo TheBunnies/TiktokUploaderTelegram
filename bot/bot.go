@@ -3,7 +3,7 @@ package bot
 import (
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
 	"github.com/TheBunnies/TiktokUploaderTelegram/db"
-	"github.com/TheBunnies/TiktokUploaderTelegram/tiktok"
+	"github.com/TheBunnies/TiktokUploaderTelegram/ttvideo"
 	"github.com/TheBunnies/TiktokUploaderTelegram/twitter"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -69,7 +69,8 @@ func InitBot() {
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
 				}
-				err = tiktok.Handle(update, bot)
+				//err = tiktok.Handle(update, bot)
+				err = ttvideo.Handle(update, bot)
 				if err != nil {
 					db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Tiktok requests are currently unavailable in the bot, we're investigating the issue and will inform you when it's finally going back. Thank you for your patience!")
