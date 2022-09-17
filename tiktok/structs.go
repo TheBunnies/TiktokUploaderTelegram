@@ -1,13 +1,17 @@
 package tiktok
 
 type AwemeDetail struct {
-	Author struct {
-		Unique_ID string
+	AwemeList []AwemeItem `json:"aweme_list"`
+}
+
+type AwemeItem struct {
+	AwemeId    string `json:"aweme_id"`
+	CreateTime int64  `json:"create_time"`
+	Desc       string `json:"desc"`
+	Author     struct {
+		Nickname string `json:"nickname"`
 	}
-	Aweme_ID    string
-	Create_Time int64
-	Desc        string
-	Video       struct {
+	Video struct {
 		Duration  int64
 		Play_Addr struct {
 			Width    int

@@ -27,7 +27,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if err != nil {
 		return err
 	}
-	data, err := NewAwemeDetail(parsedId)
+	data, err := NewAwemeItem(parsedId)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		return err
 	}
 	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
-		data.Author.Unique_ID,
+		data.Author.Nickname,
 		data.Duration(),
 		data.Time(),
 		data.Description()))

@@ -3,8 +3,10 @@ package utils
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"math/rand"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func FileNameWithoutExtension(fileName string) string {
@@ -30,4 +32,26 @@ func GetTelegramUserString(user *tgbotapi.User) string {
 
 func SanitizeTiktokUrl(url string) string {
 	return strings.Split(url, "%20")[0]
+}
+
+func RandomString(r int) string {
+	var sb strings.Builder
+	slice := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"}
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < r; i++ {
+		rng := slice[rand.Intn(len(slice))]
+		sb.Write([]byte(rng))
+	}
+	return sb.String()
+}
+
+func RandomDigits(r int) string {
+	var sb strings.Builder
+	slice := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < r; i++ {
+		rng := slice[rand.Intn(len(slice))]
+		sb.Write([]byte(rng))
+	}
+	return sb.String()
 }

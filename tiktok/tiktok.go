@@ -16,19 +16,64 @@ import (
 	"time"
 )
 
-const Origin = "http://api2.musical.ly"
+const Origin = "https://api-h2.tiktokv.com"
+
+const Manifest = "221"
+const AppVersion = "20.2.1"
 
 func Parse(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
 }
 
-func NewAwemeDetail(id uint64) (*AwemeDetail, error) {
-	req, err := http.NewRequest("GET", Origin+"/aweme/v1/aweme/detail/", nil)
+func NewAwemeItem(id uint64) (*AwemeItem, error) {
+	req, err := http.NewRequest("GET", Origin+"/aweme/v1/feed/", nil)
 	if err != nil {
 		return nil, err
 	}
-	req.URL.RawQuery = "aweme_id=" + strconv.FormatUint(id, 10)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
+	req.Header.Add("User-Agent", "com.ss.android.ugc.trill/293 (Linux; U; Android 10; en_US; Pixel 4; Build/QQ3A.200805.001; Cronet/58.0.2991.0)")
+	req.Header.Add("Accept", "application/json")
+
+	q := req.URL.Query()
+	q.Add("aweme_id", strconv.FormatUint(id, 10))
+	q.Add("version_name", AppVersion)
+	q.Add("version_code", Manifest)
+	q.Add("build_number", AppVersion)
+	q.Add("manifest_version_code", Manifest)
+	q.Add("update_version_code", Manifest)
+	q.Add("openudid", utils.RandomString(16))
+	q.Add("uuid", utils.RandomDigits(16))
+	q.Add("_rticket", strconv.FormatInt(time.Now().Unix()*1000, 10))
+	q.Add("ts", strconv.FormatInt(time.Now().Unix(), 10))
+	q.Add("device_brand", "Google")
+	q.Add("device_type", "Pixel 4")
+	q.Add("resolution", "1080*1920")
+	q.Add("dpi", "420")
+	q.Add("os_version", "10")
+	q.Add("os_api", "29")
+	q.Add("carrier_region", "US")
+	q.Add("sys_region", "US")
+	q.Add("region", "US")
+	q.Add("app_name", "trill")
+	q.Add("app_language", "en")
+	q.Add("language", "en")
+	q.Add("timezone_name", "America/New_York")
+	q.Add("timezone_offset", "-14400")
+	q.Add("channel", "googleplay")
+	q.Add("ac", "wifi")
+	q.Add("mcc_mnc", "310260")
+	q.Add("is_my_cn", "0")
+	q.Add("aid", "1180")
+	q.Add("ssmix", "a")
+	q.Add("as", "a1qwert123")
+	q.Add("cp", "cbfhckdckkde1")
+
+	req.URL.RawQuery = q.Encode()
+	cookieOdin := &http.Cookie{
+		Name:   "odin_tt",
+		Value:  utils.RandomString(160),
+		MaxAge: 300,
+	}
+	req.AddCookie(cookieOdin)
 
 	var transport *http.Transport
 	proxyUrl, err := url.Parse(config.ProxyUrl)
@@ -51,27 +96,25 @@ func NewAwemeDetail(id uint64) (*AwemeDetail, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, errors.New(res.Status)
 	}
-	var detail struct {
-		Aweme_Detail AwemeDetail
-	}
+	var detail AwemeDetail
 	if err := json.NewDecoder(res.Body).Decode(&detail); err != nil {
 		return nil, err
 	}
-	return &detail.Aweme_Detail, nil
+	return &detail.AwemeList[0], nil
 }
 
-func (a AwemeDetail) Duration() time.Duration {
+func (a AwemeItem) Duration() time.Duration {
 	return time.Duration(a.Video.Duration) * time.Millisecond
 }
-func (a AwemeDetail) Description() string {
+func (a AwemeItem) Description() string {
 	return strings.TrimSpace(a.Desc)
 }
 
-func (a AwemeDetail) Time() string {
-	return strings.Replace(time.Unix(a.Create_Time, 0).Format("Mon, 02 Jan 2006 15:04:05 MST"), "  ", " ", -1)
+func (a AwemeItem) Time() string {
+	return strings.Replace(time.Unix(a.CreateTime, 0).Format("Mon, 02 Jan 2006 15:04:05 MST"), "  ", " ", -1)
 }
 
-func (a AwemeDetail) URL() (string, error) {
+func (a AwemeItem) URL() (string, error) {
 	if len(a.Video.Play_Addr.URL_List) == 0 {
 		return "", errors.New("invalid slice")
 	}
@@ -104,7 +147,7 @@ func GetId(uri string) (string, error) {
 	return utils.FileNameWithoutExtension(filepath.Base(newUrl.String())), nil
 }
 
-func (a AwemeDetail) DownloadVideo() (*os.File, error) {
+func (a AwemeItem) DownloadVideo() (*os.File, error) {
 	addr, err := a.URL()
 	if err != nil {
 		return nil, err
