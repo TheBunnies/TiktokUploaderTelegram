@@ -1,8 +1,6 @@
 package db
 
 import (
-	"fmt"
-	"github.com/TheBunnies/TiktokUploaderTelegram/cache"
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -37,24 +35,39 @@ func (driver Driver) CreateUser(id int64, firstName string, lastName string, use
 	if result := driver.db.Create(&user); result.Error != nil {
 		return result.Error
 	}
-	cache.Cache.Set([]byte(fmt.Sprint(id)), []byte("exists"), 600)
+	//cache.Cache.Set([]byte(fmt.Sprint(id)), []byte("exists"), 600)
+	return nil
+}
+
+func (driver Driver) GetUser(id int64) (*User, error) {
+	var user User
+	if result := driver.db.First(&user, id); result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
+
+func (driver Driver) UpdateUser(oldUser User, newUser User) error {
+	if result := driver.db.Model(&oldUser).Updates(newUser); result.Error != nil {
+		return result.Error
+	}
 	return nil
 }
 
 func (driver Driver) IsUserExists(id int64) (bool, error) {
 	var exists bool
-	_, err := cache.Cache.Get([]byte(fmt.Sprint(id)))
+	/*_, err := cache.Cache.Get([]byte(fmt.Sprint(id)))
 	if err == nil {
 		return true, nil
-	}
+	}*/
 
-	err = driver.db.Model(&User{}).
+	err := driver.db.Model(&User{}).
 		Select("count(*) > 0").
 		Where("id = ?", id).
 		Find(&exists).
 		Error
 
-	cache.Cache.Set([]byte(fmt.Sprint(id)), []byte("exists"), 600)
+	//cache.Cache.Set([]byte(fmt.Sprint(id)), []byte("exists"), 600)
 	return exists, err
 }
 

@@ -86,10 +86,13 @@ func InitBot() {
 func TryCreateUser(user *tgbotapi.User) error {
 	exists, err := db.DRIVER.IsUserExists(user.ID)
 	if err != nil {
-		return err
+		return nil
 	}
-	if !exists {
+	if exists {
+		dbUser, _ := db.DRIVER.GetUser(user.ID)
+		return db.DRIVER.UpdateUser(*dbUser, db.User{FirstName: user.FirstName, LastName: user.LastName, Username: user.UserName})
+	} else {
 		return db.DRIVER.CreateUser(user.ID, user.FirstName, user.LastName, user.UserName)
 	}
-	return nil
+
 }
