@@ -35,7 +35,6 @@ func (driver Driver) CreateUser(id int64, firstName string, lastName string, use
 	if result := driver.db.Create(&user); result.Error != nil {
 		return result.Error
 	}
-	//cache.Cache.Set([]byte(fmt.Sprint(id)), []byte("exists"), 600)
 	return nil
 }
 
@@ -56,10 +55,6 @@ func (driver Driver) UpdateUser(oldUser User, newUser User) error {
 
 func (driver Driver) IsUserExists(id int64) (bool, error) {
 	var exists bool
-	/*_, err := cache.Cache.Get([]byte(fmt.Sprint(id)))
-	if err == nil {
-		return true, nil
-	}*/
 
 	err := driver.db.Model(&User{}).
 		Select("count(*) > 0").
@@ -67,7 +62,6 @@ func (driver Driver) IsUserExists(id int64) (bool, error) {
 		Find(&exists).
 		Error
 
-	//cache.Cache.Set([]byte(fmt.Sprint(id)), []byte("exists"), 600)
 	return exists, err
 }
 
