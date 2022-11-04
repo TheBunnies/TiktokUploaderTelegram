@@ -17,8 +17,15 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	db.DRIVER.LogInformation("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
 	data := NewTwitterVideoDownloader(link)
-	file, err := data.Download()
+	file, err := data.Download(utils.DownloadBytesLimit)
 	if err != nil {
+		if err.Error() == "too large" {
+			db.DRIVER.LogInformation("A requested video exceeded it's upload limit for " + utils.GetTelegramUserString(update.Message.From))
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Your requested twitter video is too large for me to handle! I can only upload videos up to 50MB")
+			msg.ReplyToMessageID = update.Message.MessageID
+			api.Send(msg)
+			return nil
+		}
 		return err
 	}
 	media := tgbotapi.FilePath(file.Name())

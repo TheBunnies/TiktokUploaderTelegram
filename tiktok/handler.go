@@ -31,8 +31,15 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if err != nil {
 		return err
 	}
-	file, err := data.DownloadVideo()
+	file, err := data.DownloadVideo(utils.DownloadBytesLimit)
 	if err != nil {
+		if err.Error() == "too large" {
+			db.DRIVER.LogInformation("A requested video exceeded it's upload limit for " + utils.GetTelegramUserString(update.Message.From))
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Your requested tiktok video is too large for me to handle! I can only upload videos up to 50MB")
+			msg.ReplyToMessageID = update.Message.MessageID
+			api.Send(msg)
+			return nil
+		}
 		return err
 	}
 	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",

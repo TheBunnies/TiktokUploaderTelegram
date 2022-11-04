@@ -147,7 +147,7 @@ func GetId(uri string) (string, error) {
 	return utils.FileNameWithoutExtension(filepath.Base(newUrl.String())), nil
 }
 
-func (a AwemeItem) DownloadVideo() (*os.File, error) {
+func (a AwemeItem) DownloadVideo(downloadBytesLimit int64) (*os.File, error) {
 	addr, err := a.URL()
 	if err != nil {
 		return nil, err
@@ -157,6 +157,11 @@ func (a AwemeItem) DownloadVideo() (*os.File, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+	size, _ := strconv.Atoi(res.Header.Get("Content-Length"))
+	downloadSize := int64(size)
+	if downloadSize > downloadBytesLimit {
+		return nil, errors.New("too large")
+	}
 	u, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package twitter
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
 	"github.com/gocolly/colly"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -106,7 +108,7 @@ func (s *VideoDownloader) GetM3U8Url(m3u8_urls string) string {
 	return m3u8_url
 }
 
-func (s *VideoDownloader) Download() (*os.File, error) {
+func (s *VideoDownloader) Download(downloadBytesLimit int64) (*os.File, error) {
 	s.GetBearerToken()
 	s.GetXGuestToken()
 	m3u8_urls := s.GetM3U8Urls()
@@ -132,8 +134,12 @@ func (s *VideoDownloader) Download() (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer response.Body.Close()
+	size, _ := strconv.Atoi(response.Header.Get("Content-Length"))
+	downloadSize := int64(size)
+	if downloadSize > downloadBytesLimit {
+		return nil, errors.New("too large")
+	}
 	cmd := exec.Command("ffmpeg", "-y", "-http_proxy", config.ProxyUrl, "-i", m3u8_url, "-c", "copy", filename)
 	cmd.Run()
 	openedFile, err := os.Open(filename)
