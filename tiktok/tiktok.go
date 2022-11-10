@@ -137,6 +137,9 @@ func GetId(uri string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadGateway {
+		return "", errors.New("video not found")
+	}
 	newUrl, _ := url.Parse(resp.Request.URL.String())
 	newUrl.RawQuery = ""
 	newUrl.Scheme = "http"
