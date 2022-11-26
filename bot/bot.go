@@ -36,19 +36,19 @@ func InitBot() {
 		if update.Message == nil {
 			continue
 		}
-		if update.Message.Chat.IsPrivate() && (strings.HasPrefix(update.Message.Text, "/help") || strings.HasPrefix(update.Message.Text, "/start")) {
-			db.DRIVER.LogInformation(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
-			err = TryCreateUser(update.Message.From)
-			if err != nil {
-				db.DRIVER.LogError("Error while creating a user", err.Error())
+		go func() {
+			if update.Message.Chat.IsPrivate() && (strings.HasPrefix(update.Message.Text, "/help") || strings.HasPrefix(update.Message.Text, "/start")) {
+				db.DRIVER.LogInformation(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
+				err = TryCreateUser(update.Message.From)
+				if err != nil {
+					db.DRIVER.LogError("Error while creating a user", err.Error())
+				}
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
+				msg.ReplyToMessageID = update.Message.MessageID
+				bot.Send(msg)
+				return
 			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
-			msg.ReplyToMessageID = update.Message.MessageID
-			bot.Send(msg)
-			continue
-		}
-		if rgxTwitter.MatchString(update.Message.Text) {
-			go func() {
+			if rgxTwitter.MatchString(update.Message.Text) {
 				err = TryCreateUser(update.Message.From)
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
@@ -63,10 +63,8 @@ func InitBot() {
 					bot.Send(msg)
 					return
 				}
-			}()
-		}
-		if rgxTiktok.MatchString(update.Message.Text) {
-			go func() {
+			}
+			if rgxTiktok.MatchString(update.Message.Text) {
 				err = TryCreateUser(update.Message.From)
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
@@ -81,8 +79,8 @@ func InitBot() {
 					bot.Send(msg)
 					return
 				}
-			}()
-		}
+			}
+		}()
 	}
 }
 
