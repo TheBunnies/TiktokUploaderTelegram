@@ -33,7 +33,8 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 		return
 	}
 	media := tgbotapi.FilePath(file.Name())
-	video := tgbotapi.NewVideo(update.Message.From.ID, media)
+	video := tgbotapi.NewVideo(update.Message.Chat.ID, media)
+	video.ReplyToMessageID = update.Message.MessageID
 
 	_, err = api.Send(video)
 	if err != nil {
