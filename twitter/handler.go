@@ -12,7 +12,7 @@ var (
 	rgxTwitter = regexp.MustCompile(`http(|s):\/\/twitter\.com\/i\/status\/[0-9]*`)
 )
 
-func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
+func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 	link := utils.TrimURL(rgxTwitter.FindString(update.Message.Text))
 	db.DRIVER.LogInformation("Started processing twitter request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
@@ -24,9 +24,13 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Your requested twitter video is too large for me to handle! I can only upload videos up to 50MB")
 			msg.ReplyToMessageID = update.Message.MessageID
 			api.Send(msg)
-			return nil
+			return
 		}
-		return err
+		db.DRIVER.LogError("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err.Error())
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+		msg.ReplyToMessageID = update.Message.MessageID
+		api.Send(msg)
+		return
 	}
 	media := tgbotapi.FilePath(file.Name())
 	video := tgbotapi.NewVideo(update.Message.From.ID, media)
@@ -36,12 +40,15 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if err != nil {
 		file.Close()
 		os.Remove(file.Name())
-		return err
+		db.DRIVER.LogError("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err.Error())
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+		msg.ReplyToMessageID = update.Message.MessageID
+		api.Send(msg)
+		return
 	}
 
 	file.Close()
 	os.Remove(file.Name())
 
 	db.DRIVER.LogInformation("Finished processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
-	return nil
 }

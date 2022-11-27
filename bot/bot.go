@@ -55,14 +55,7 @@ func InitBot() {
 				}
 				action := tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)
 				bot.Send(action)
-				err = twitter.Handle(update, bot)
-				if err != nil {
-					db.DRIVER.LogError("Couldn't handle a twitter request", utils.GetTelegramUserString(update.Message.From), err.Error())
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
-					msg.ReplyToMessageID = update.Message.MessageID
-					bot.Send(msg)
-					return
-				}
+				twitter.Handle(update, bot)
 			}
 			if rgxTiktok.MatchString(update.Message.Text) {
 				err = TryCreateUser(update.Message.From)
@@ -71,14 +64,7 @@ func InitBot() {
 				}
 				action := tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)
 				bot.Send(action)
-				err = tiktok.Handle(update, bot)
-				if err != nil {
-					db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
-					msg.ReplyToMessageID = update.Message.MessageID
-					bot.Send(msg)
-					return
-				}
+				tiktok.Handle(update, bot)
 			}
 		}()
 	}
