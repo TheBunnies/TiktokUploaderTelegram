@@ -156,6 +156,9 @@ func (a AwemeItem) DownloadVideo(downloadBytesLimit int64) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	if res.StatusCode == http.StatusForbidden {
+		return nil, errors.New("got forbidden out of a video")
+	}
 	defer res.Body.Close()
 	size, _ := strconv.Atoi(res.Header.Get("Content-Length"))
 	downloadSize := int64(size)

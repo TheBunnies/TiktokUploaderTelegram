@@ -13,7 +13,7 @@ var (
 	rgxTiktok = regexp.MustCompile(`http(s|):\/\/.*(tiktok)\.com.*`)
 )
 
-func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
+func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 	link := utils.TrimURL(rgxTiktok.FindString(update.Message.Text))
 	link = utils.SanitizeTiktokUrl(link)
 
@@ -21,11 +21,19 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 
 	data, err := NewTTVideoDetail(link)
 	if err != nil {
-		return err
+		db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+		msg.ReplyToMessageID = update.Message.MessageID
+		api.Send(msg)
+		return
 	}
 	file, err := data.DownloadVideo()
 	if err != nil {
-		return err
+		db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+		msg.ReplyToMessageID = update.Message.MessageID
+		api.Send(msg)
+		return
 	}
 	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s",
 		data.Author(),
@@ -42,11 +50,14 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if err != nil {
 		file.Close()
 		os.Remove(file.Name())
-		return err
+		db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+		msg.ReplyToMessageID = update.Message.MessageID
+		api.Send(msg)
+		return
 	}
 
 	file.Close()
 	os.Remove(file.Name())
 	db.DRIVER.LogInformation("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
-	return nil
 }
