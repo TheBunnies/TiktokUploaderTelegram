@@ -41,7 +41,7 @@ func (a TTVideoDetail) Duration() string {
 	return a.Meta.Duration
 }
 
-func (a TTVideoDetail) Author() string {
+func (a TTVideoDetail) Title() string {
 	return strings.Split(a.Meta.Title, " -")[0]
 }
 func (a TTVideoDetail) URL() (string, error) {

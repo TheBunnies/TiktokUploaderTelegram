@@ -35,8 +35,8 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 		api.Send(msg)
 		return
 	}
-	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s",
-		data.Author(),
+	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Title: %s \nDuration: %s",
+		data.Title(),
 		data.Duration(),
 	))
 	message.ReplyToMessageID = update.Message.MessageID
