@@ -66,7 +66,7 @@ func NewAwemeItem(id uint64) (*AwemeItem, error) {
 	q.Add("ssmix", "a")
 	q.Add("as", "a1qwert123")
 	q.Add("cp", "cbfhckdckkde1")
-	q.Add("device_id", "6858675245898655468")
+	q.Add("device_id", utils.RandomDigits(19))
 
 	req.URL.RawQuery = q.Encode()
 	cookieOdin := &http.Cookie{
