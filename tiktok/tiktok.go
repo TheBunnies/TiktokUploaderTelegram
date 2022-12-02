@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const Origin = "https://api-h2.tiktokv.com"
+const Origin = "https://api.tiktokv.com"
 
 const Manifest = "221"
 const AppVersion = "20.2.1"
@@ -30,13 +30,13 @@ func NewAwemeItem(id uint64) (*AwemeItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("User-Agent", "com.ss.android.ugc.trill/293 (Linux; U; Android 10; en_US; Pixel 4; Build/QQ3A.200805.001; Cronet/58.0.2991.0)")
+	req.Header.Add("User-Agent", "com.ss.android.ugc.trill/494+Mozilla/5.0+(Linux;+Android+12;+2112123G+Build/SKQ1.211006.001;+wv)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Version/4.0+Chrome/107.0.5304.105+Mobile+Safari/537.36")
 	req.Header.Add("Accept", "application/json")
 
 	q := req.URL.Query()
 	q.Add("aweme_id", strconv.FormatUint(id, 10))
 	q.Add("version_name", AppVersion)
-	q.Add("version_code", Manifest)
+	q.Add("iid", "6165993682518218889")
 	q.Add("build_number", AppVersion)
 	q.Add("manifest_version_code", Manifest)
 	q.Add("update_version_code", Manifest)
@@ -66,6 +66,7 @@ func NewAwemeItem(id uint64) (*AwemeItem, error) {
 	q.Add("ssmix", "a")
 	q.Add("as", "a1qwert123")
 	q.Add("cp", "cbfhckdckkde1")
+	q.Add("device_id", "6858675245898655468")
 
 	req.URL.RawQuery = q.Encode()
 	cookieOdin := &http.Cookie{
