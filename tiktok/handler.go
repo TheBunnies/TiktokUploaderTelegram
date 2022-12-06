@@ -112,8 +112,11 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 		for _, image := range images {
 			photos = append(photos, tgbotapi.NewInputMediaPhoto(tgbotapi.FilePath(image.Name())))
 		}
-		mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, photos)
-		api.Send(mediaGroup)
+		chuncks := utils.ChunkSlice(photos, 10)
+		for _, chunck := range chuncks {
+			mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, chunck)
+			api.Send(mediaGroup)
+		}
 
 		video := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
 		_, err = api.Send(video)
