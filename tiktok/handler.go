@@ -110,7 +110,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 
 		var photos []interface{}
 		for _, image := range images {
-			photos = append(photos, tgbotapi.NewPhoto(update.Message.Chat.ID, tgbotapi.FilePath(image.Name())))
+			photos = append(photos, tgbotapi.NewInputMediaPhoto(tgbotapi.FilePath(image.Name())))
 		}
 		mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, photos)
 		_, err = api.Send(mediaGroup)
