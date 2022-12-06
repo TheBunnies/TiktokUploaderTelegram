@@ -187,3 +187,54 @@ func (a AwemeItem) DownloadVideo(downloadBytesLimit int64) (*os.File, error) {
 	}
 	return openedFile, nil
 }
+
+func (a AwemeItem) DownloadImagesWithAudio(downloadBytesLimit int64) ([]*os.File, *os.File, error) {
+	var addresses []string
+	for _, address := range a.ImagePostInfo.Images {
+		addresses = append(addresses, address.DisplayImage.UrlList[1])
+	}
+	var images []*os.File
+	for _, item := range addresses {
+		res, err := http.Get(item)
+		if err != nil {
+			res.Body.Close()
+			return nil, nil, err
+		}
+		if res.StatusCode == http.StatusForbidden {
+			res.Body.Close()
+			return nil, nil, errors.New("got forbidden out of an image")
+		}
+		u, err := uuid.NewUUID()
+		if err != nil {
+			res.Body.Close()
+			return nil, nil, err
+		}
+		filename := fmt.Sprintf("%s.%s", u.String(), strings.Split(res.Header.Get("Content-Type"), "/")[1])
+		file, err := os.Create(filename)
+		if err != nil {
+			res.Body.Close()
+			file.Close()
+			return nil, nil, err
+		}
+		if _, err := file.ReadFrom(res.Body); err != nil {
+			res.Body.Close()
+			file.Close()
+			return nil, nil, err
+		}
+		res.Body.Close()
+		file.Close()
+		openedFile, err := os.Open(file.Name())
+		if err != nil {
+			openedFile.Close()
+			os.Remove(openedFile.Name())
+			return nil, nil, err
+		}
+		images = append(images, openedFile)
+	}
+	file, err := a.DownloadVideo(downloadBytesLimit)
+	if err != nil {
+		return nil, nil, err
+	}
+	return images, file, nil
+
+}
