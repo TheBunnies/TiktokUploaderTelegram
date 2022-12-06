@@ -113,17 +113,8 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 			photos = append(photos, tgbotapi.NewInputMediaPhoto(tgbotapi.FilePath(image.Name())))
 		}
 		mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, photos)
-		_, err = api.Send(mediaGroup)
-		if err != nil {
-			audio.Close()
-			os.Remove(audio.Name())
-			closeAndDeleteFiles(images)
-			db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(update.Message.From), err.Error())
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
-			msg.ReplyToMessageID = update.Message.MessageID
-			api.Send(msg)
-			return
-		}
+		api.Send(mediaGroup)
+
 		video := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
 		_, err = api.Send(video)
 		if err != nil {
