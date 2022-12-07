@@ -118,8 +118,8 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 			api.Send(mediaGroup)
 		}
 
-		video := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
-		_, err = api.Send(video)
+		audioMedia := tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
+		_, err = api.Send(audioMedia)
 		if err != nil {
 			audio.Close()
 			os.Remove(audio.Name())

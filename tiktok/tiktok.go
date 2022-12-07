@@ -171,6 +171,9 @@ func (a AwemeItem) DownloadVideo(downloadBytesLimit int64) (*os.File, error) {
 		return nil, err
 	}
 	filename := fmt.Sprintf("%s.%s", u.String(), strings.Split(res.Header.Get("Content-Type"), "/")[1])
+	if strings.HasSuffix(filename, ".mpeg") {
+		filename = strings.Replace(filename, ".mpeg", ".mp3", 1)
+	}
 	file, err := os.Create(filename)
 	if err != nil {
 		return nil, err
