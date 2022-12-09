@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const Origin = "https://api.tiktokv.com"
+const Origin = "api16-normal-c-useast1a.tiktokv.com"
 
 const Manifest = "221"
 const AppVersion = "20.2.1"

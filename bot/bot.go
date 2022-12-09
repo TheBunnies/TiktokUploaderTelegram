@@ -3,7 +3,7 @@ package bot
 import (
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
 	"github.com/TheBunnies/TiktokUploaderTelegram/db"
-	"github.com/TheBunnies/TiktokUploaderTelegram/ttvideo"
+	"github.com/TheBunnies/TiktokUploaderTelegram/tiktok"
 	"github.com/TheBunnies/TiktokUploaderTelegram/twitter"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -64,7 +64,7 @@ func InitBot() {
 				}
 				action := tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)
 				bot.Send(action)
-				ttvideo.Handle(update, bot)
+				tiktok.Handle(update, bot)
 			}
 		}()
 	}
