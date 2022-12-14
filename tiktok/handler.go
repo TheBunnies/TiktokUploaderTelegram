@@ -7,6 +7,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"os"
 	"regexp"
+	"strings"
+	"time"
 )
 
 var (
@@ -116,10 +118,16 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 		for _, chunck := range chuncks {
 			mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, chunck)
 			api.Send(mediaGroup)
+			time.Sleep(time.Second * 1)
 		}
-
-		audioMedia := tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
-		_, err = api.Send(audioMedia)
+		var c tgbotapi.Chattable
+		name := audio.Name()
+		if strings.HasSuffix(name, ".mp4") {
+			c = tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(name))
+		} else {
+			c = tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
+		}
+		_, err = api.Send(c)
 		if err != nil {
 			audio.Close()
 			os.Remove(audio.Name())
