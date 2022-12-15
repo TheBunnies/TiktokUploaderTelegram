@@ -118,7 +118,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 		for _, chunck := range chuncks {
 			mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, chunck)
 			api.Send(mediaGroup)
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Second * 2)
 		}
 		var c tgbotapi.Chattable
 		name := audio.Name()
@@ -127,6 +127,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) {
 		} else {
 			c = tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
 		}
+		time.Sleep(time.Second * 1)
 		_, err = api.Send(c)
 		if err != nil {
 			audio.Close()
