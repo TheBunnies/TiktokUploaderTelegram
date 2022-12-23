@@ -36,37 +36,63 @@ func InitBot() {
 		if update.Message == nil {
 			continue
 		}
-		go func() {
-			if update.Message.Chat.IsPrivate() && (strings.HasPrefix(update.Message.Text, "/help") || strings.HasPrefix(update.Message.Text, "/start")) {
-				db.DRIVER.LogInformation(utils.GetTelegramUserString(update.Message.From), "just invoked the /start or /help command")
-				err = TryCreateUser(update.Message.From)
+		go func(upd tgbotapi.Update) {
+			if upd.Message.Chat.IsPrivate() && (strings.HasPrefix(upd.Message.Text, "/help") || strings.HasPrefix(upd.Message.Text, "/start")) {
+				db.DRIVER.LogInformation(utils.GetTelegramUserString(upd.Message.From), "just invoked the /start or /help command")
+				err = TryCreateUser(upd.Message.From)
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
 				}
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
-				msg.ReplyToMessageID = update.Message.MessageID
+				msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Hello! Start using me by just typing either tiktok or twitter URL in whatever chat I'm in :)")
+				msg.ReplyToMessageID = upd.Message.MessageID
 				bot.Send(msg)
 				return
 			}
-			if rgxTwitter.MatchString(update.Message.Text) {
-				err = TryCreateUser(update.Message.From)
+			if rgxTwitter.MatchString(upd.Message.Text) {
+				err = TryCreateUser(upd.Message.From)
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
 				}
-				action := tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)
+				action := tgbotapi.NewChatAction(upd.Message.Chat.ID, tgbotapi.ChatTyping)
 				bot.Send(action)
-				twitter.Handle(update, bot)
+				err = twitter.Handle(upd, bot)
+				if err != nil {
+					if err.Error() == "too large" {
+						db.DRIVER.LogInformation("A requested video exceeded it's upload limit for " + utils.GetTelegramUserString(upd.Message.From))
+						msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Your requested twitter video is too large for me to handle! I can only upload videos up to 50MB")
+						msg.ReplyToMessageID = upd.Message.MessageID
+						bot.Send(msg)
+						return
+					}
+					db.DRIVER.LogError("Couldn't handle a twitter request", utils.GetTelegramUserString(upd.Message.From), err.Error())
+					msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+					msg.ReplyToMessageID = upd.Message.MessageID
+					bot.Send(msg)
+				}
 			}
-			if rgxTiktok.MatchString(update.Message.Text) {
-				err = TryCreateUser(update.Message.From)
+			if rgxTiktok.MatchString(upd.Message.Text) {
+				err = TryCreateUser(upd.Message.From)
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
 				}
-				action := tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)
+				action := tgbotapi.NewChatAction(upd.Message.Chat.ID, tgbotapi.ChatTyping)
 				bot.Send(action)
-				tiktok.Handle(update, bot)
+				err = tiktok.Handle(upd, bot)
+				if err != nil {
+					if err.Error() == "too large" {
+						db.DRIVER.LogInformation("A requested video exceeded it's upload limit for " + utils.GetTelegramUserString(upd.Message.From))
+						msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Your requested tiktok video is too large for me to handle! I can only upload videos up to 50MB")
+						msg.ReplyToMessageID = upd.Message.MessageID
+						bot.Send(msg)
+						return
+					}
+					db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(upd.Message.From), err.Error())
+					msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+					msg.ReplyToMessageID = upd.Message.MessageID
+					bot.Send(msg)
+				}
 			}
-		}()
+		}(update)
 	}
 }
 
