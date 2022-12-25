@@ -18,9 +18,6 @@ import (
 
 const Origin = "https://api16-normal-c-useast1a.tiktokv.com"
 
-const Manifest = "221"
-const AppVersion = "20.2.1"
-
 func Parse(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
 }
@@ -35,38 +32,7 @@ func NewAwemeItem(id uint64) (*AwemeItem, error) {
 
 	q := req.URL.Query()
 	q.Add("aweme_id", strconv.FormatUint(id, 10))
-	q.Add("version_name", AppVersion)
-	q.Add("iid", "6165993682518218889")
-	q.Add("build_number", AppVersion)
-	q.Add("manifest_version_code", Manifest)
-	q.Add("update_version_code", Manifest)
-	q.Add("openudid", utils.RandomString(16))
-	q.Add("uuid", utils.RandomDigits(16))
-	q.Add("_rticket", strconv.FormatInt(time.Now().Unix()*1000, 10))
-	q.Add("ts", strconv.FormatInt(time.Now().Unix(), 10))
-	q.Add("device_brand", "Google")
-	q.Add("device_type", "Pixel 4")
-	q.Add("resolution", "1080*1920")
-	q.Add("dpi", "420")
-	q.Add("os_version", "10")
-	q.Add("os_api", "29")
-	q.Add("carrier_region", "US")
-	q.Add("sys_region", "US")
-	q.Add("region", "US")
-	q.Add("app_name", "trill")
-	q.Add("app_language", "en")
-	q.Add("language", "en")
-	q.Add("timezone_name", "America/New_York")
-	q.Add("timezone_offset", "-14400")
-	q.Add("channel", "googleplay")
-	q.Add("ac", "wifi")
-	q.Add("mcc_mnc", "310260")
-	q.Add("is_my_cn", "0")
 	q.Add("aid", "1180")
-	q.Add("ssmix", "a")
-	q.Add("as", "a1qwert123")
-	q.Add("cp", "cbfhckdckkde1")
-	q.Add("device_id", utils.RandomDigits(19))
 
 	req.URL.RawQuery = q.Encode()
 	cookieOdin := &http.Cookie{
