@@ -32,7 +32,6 @@ func NewAwemeItem(id uint64) (*AwemeItem, error) {
 
 	q := req.URL.Query()
 	q.Add("aweme_id", strconv.FormatUint(id, 10))
-	q.Add("aid", "1988")
 
 	req.URL.RawQuery = q.Encode()
 	cookieOdin := &http.Cookie{
