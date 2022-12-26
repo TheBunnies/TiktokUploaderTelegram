@@ -3,7 +3,7 @@ package bot
 import (
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
 	"github.com/TheBunnies/TiktokUploaderTelegram/db"
-	"github.com/TheBunnies/TiktokUploaderTelegram/tiktok"
+	"github.com/TheBunnies/TiktokUploaderTelegram/ttvideo"
 	"github.com/TheBunnies/TiktokUploaderTelegram/twitter"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -77,7 +77,7 @@ func InitBot() {
 				}
 				action := tgbotapi.NewChatAction(upd.Message.Chat.ID, tgbotapi.ChatTyping)
 				bot.Send(action)
-				err = tiktok.Handle(upd, bot)
+				err = ttvideo.Handle(upd, bot)
 				if err != nil {
 					if err.Error() == "too large" {
 						db.DRIVER.LogInformation("A requested video exceeded it's upload limit for " + utils.GetTelegramUserString(upd.Message.From))
