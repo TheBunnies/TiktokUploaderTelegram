@@ -26,14 +26,13 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	video.ReplyToMessageID = update.Message.MessageID
 
 	_, err = api.Send(video)
+
+	defer file.Close()
+	defer os.Remove(file.Name())
+
 	if err != nil {
-		file.Close()
-		os.Remove(file.Name())
 		return err
 	}
-
-	file.Close()
-	os.Remove(file.Name())
 
 	db.DRIVER.LogInformation("Finished processing twitter request by " + utils.GetTelegramUserString(update.Message.From))
 	return nil

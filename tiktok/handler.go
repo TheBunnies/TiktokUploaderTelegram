@@ -51,12 +51,14 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		video := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(file.Name()))
 
 		_, err = api.Send(video)
+
+		defer file.Close()
+		defer os.Remove(file.Name())
+
 		if err != nil {
 			return err
 		}
 
-		file.Close()
-		os.Remove(file.Name())
 	} else {
 		images, audio, err := data.DownloadImagesWithAudio(utils.DownloadBytesLimit)
 		if err != nil {
@@ -75,9 +77,9 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		for _, image := range images {
 			photos = append(photos, tgbotapi.NewInputMediaPhoto(tgbotapi.FilePath(image.Name())))
 		}
-		chuncks := utils.ChunkSlice(photos, 10)
-		for _, chunck := range chuncks {
-			mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, chunck)
+		chunks := utils.ChunkSlice(photos, 10)
+		for _, chunk := range chunks {
+			mediaGroup := tgbotapi.NewMediaGroup(update.Message.Chat.ID, chunk)
 			api.Send(mediaGroup)
 			time.Sleep(time.Second * 2)
 		}
@@ -89,17 +91,15 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 			c = tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
 		}
 		time.Sleep(time.Second * 1)
+
+		defer audio.Close()
+		defer os.Remove(audio.Name())
+		defer closeAndDeleteFiles(images)
+
 		_, err = api.Send(c)
 		if err != nil {
-			audio.Close()
-			os.Remove(audio.Name())
-			closeAndDeleteFiles(images)
 			return err
 		}
-
-		audio.Close()
-		os.Remove(audio.Name())
-		closeAndDeleteFiles(images)
 	}
 
 	db.DRIVER.LogInformation("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
