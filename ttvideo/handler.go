@@ -38,15 +38,14 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	media := tgbotapi.FilePath(file.Name())
 	video := tgbotapi.NewVideo(update.Message.Chat.ID, media)
 
+	defer file.Close()
+	defer os.Remove(file.Name())
+
 	_, err = api.Send(video)
 	if err != nil {
-		file.Close()
-		os.Remove(file.Name())
 		return err
 	}
 
-	file.Close()
-	os.Remove(file.Name())
 	db.DRIVER.LogInformation("Finished processing tiktok request by " + utils.GetTelegramUserString(update.Message.From))
 	return nil
 }
