@@ -1,7 +1,6 @@
 package tiktok
 
 import (
-	"fmt"
 	"github.com/TheBunnies/TiktokUploaderTelegram/db"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,7 +22,6 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 
 	id, err := GetId(link)
 	if err != nil {
-
 		return err
 	}
 	parsedId, err := Parse(id)
@@ -34,22 +32,18 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if err != nil {
 		return err
 	}
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Request additional info", id)))
 	if data.ImagePostInfo.Images == nil {
 		file, err := data.DownloadVideo(utils.DownloadBytesLimit)
 		if err != nil {
 			return err
 		}
-		message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
-			data.Author.Nickname,
-			data.Duration(),
-			data.Time(),
-			data.Description()))
-		message.ReplyToMessageID = update.Message.MessageID
-
-		api.Send(message)
 
 		video := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(file.Name()))
-
+		video.ReplyMarkup = numericKeyboard
+		video.ReplyToMessageID = update.Message.MessageID
 		_, err = api.Send(video)
 
 		defer file.Close()
@@ -64,14 +58,6 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		if err != nil {
 			return err
 		}
-		message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
-			data.Author.Nickname,
-			data.Duration(),
-			data.Time(),
-			data.Description()))
-		message.ReplyToMessageID = update.Message.MessageID
-
-		api.Send(message)
 
 		var photos []interface{}
 		for _, image := range images {
@@ -83,20 +69,25 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 			api.Send(mediaGroup)
 			time.Sleep(time.Second * 2)
 		}
-		var c tgbotapi.Chattable
-		name := audio.Name()
-		if strings.HasSuffix(name, ".mp4") {
-			c = tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(name))
-		} else {
-			c = tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(audio.Name()))
-		}
+
 		time.Sleep(time.Second * 1)
 
 		defer audio.Close()
 		defer os.Remove(audio.Name())
 		defer closeAndDeleteFiles(images)
 
-		_, err = api.Send(c)
+		name := audio.Name()
+		if strings.HasSuffix(name, ".mp4") {
+			c := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(name))
+			c.ReplyMarkup = numericKeyboard
+			c.ReplyToMessageID = update.Message.MessageID
+			_, err = api.Send(c)
+		} else {
+			c := tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(name))
+			c.ReplyMarkup = numericKeyboard
+			c.ReplyToMessageID = update.Message.MessageID
+			_, err = api.Send(c)
+		}
 		if err != nil {
 			return err
 		}
