@@ -39,6 +39,9 @@ func InitBot() {
 		}
 		go func(upd tgbotapi.Update) {
 			if upd.CallbackQuery != nil {
+				if upd.CallbackQuery.Message.Caption != "" {
+					return
+				}
 				parsedId, err := tiktok.Parse(upd.CallbackQuery.Data)
 				if err != nil {
 					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(upd.CallbackQuery.From), err.Error())
@@ -49,12 +52,12 @@ func InitBot() {
 					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(upd.CallbackQuery.From), err.Error())
 					return
 				}
-				msg := tgbotapi.NewMessage(upd.CallbackQuery.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
+
+				msg := tgbotapi.NewEditMessageCaption(upd.CallbackQuery.Message.Chat.ID, upd.CallbackQuery.Message.MessageID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
 					data.Author.Nickname,
 					data.Duration(),
 					data.Time(),
 					data.Description()))
-				msg.ReplyToMessageID = upd.CallbackQuery.Message.MessageID
 				if _, err := bot.Send(msg); err != nil {
 					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(upd.CallbackQuery.From), err.Error())
 				}
