@@ -34,34 +34,33 @@ func InitBot() {
 	u.Timeout = 60
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
-		if update.CallbackQuery != nil {
-			go func(upd tgbotapi.Update) {
-				parsedId, err := tiktok.Parse(update.CallbackQuery.Data)
+		if update.Message == nil && update.CallbackQuery == nil {
+			continue
+		}
+		go func(upd tgbotapi.Update) {
+			if upd.CallbackQuery != nil {
+				parsedId, err := tiktok.Parse(upd.CallbackQuery.Data)
 				if err != nil {
-					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(update.CallbackQuery.From), err.Error())
+					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(upd.CallbackQuery.From), err.Error())
 					return
 				}
 				data, err := tiktok.NewAwemeItem(parsedId)
 				if err != nil {
-					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(update.CallbackQuery.From), err.Error())
+					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(upd.CallbackQuery.From), err.Error())
 					return
 				}
-				msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
+				msg := tgbotapi.NewMessage(upd.CallbackQuery.Message.Chat.ID, fmt.Sprintf("Author: %s \nDuration: %s\nCreation time: %s \nDescription: %s \n",
 					data.Author.Nickname,
 					data.Duration(),
 					data.Time(),
 					data.Description()))
-				msg.ReplyToMessageID = update.CallbackQuery.Message.MessageID
+				msg.ReplyToMessageID = upd.CallbackQuery.Message.MessageID
 				if _, err := bot.Send(msg); err != nil {
-					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(update.CallbackQuery.From), err.Error())
+					db.DRIVER.LogError("Couldn't handle a callback request", utils.GetTelegramUserString(upd.CallbackQuery.From), err.Error())
 				}
 				return
-			}(update)
-		}
-		if update.Message == nil {
-			continue
-		}
-		go func(upd tgbotapi.Update) {
+			}
+
 			if upd.Message.Chat.IsPrivate() && (strings.HasPrefix(upd.Message.Text, "/help") || strings.HasPrefix(upd.Message.Text, "/start")) {
 				db.DRIVER.LogInformation(utils.GetTelegramUserString(upd.Message.From), "just invoked the /start or /help command")
 				err = TryCreateUser(upd.Message.From)
