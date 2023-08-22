@@ -8,5 +8,8 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 RUN apk add --no-cache ffmpeg
 RUN apk -U add yt-dlp
+RUN apk upgrade --update-cache --available && \
+    apk add openssl && \
+    rm -rf /var/cache/apk/*
 COPY --from=stage /usr/src/app ./
 CMD ["./app"]
