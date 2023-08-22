@@ -5,18 +5,14 @@ import (
 	"github.com/TheBunnies/TiktokUploaderTelegram/config"
 	"github.com/TheBunnies/TiktokUploaderTelegram/db"
 	"github.com/TheBunnies/TiktokUploaderTelegram/tiktok"
-	"github.com/TheBunnies/TiktokUploaderTelegram/twitter"
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
+	"github.com/TheBunnies/TiktokUploaderTelegram/youtube"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
-	"regexp"
 	"strings"
 )
 
 var (
-	rgxTiktok  = regexp.MustCompile(`http(s|):\/\/.*(tiktok).com[^\s]*`)
-	rgxTwitter = regexp.MustCompile(`http(|s):\/\/twitter\.com\/i\/status\/[0-9]*`)
-
 	Client *tgbotapi.BotAPI
 )
 
@@ -75,29 +71,7 @@ func InitBot() {
 				bot.Send(msg)
 				return
 			}
-			if rgxTwitter.MatchString(upd.Message.Text) {
-				err = TryCreateUser(upd.Message.From)
-				if err != nil {
-					db.DRIVER.LogError("Error while creating a user", err.Error())
-				}
-				action := tgbotapi.NewChatAction(upd.Message.Chat.ID, tgbotapi.ChatTyping)
-				bot.Send(action)
-				err = twitter.Handle(upd, bot)
-				if err != nil {
-					if err.Error() == "too large" {
-						db.DRIVER.LogInformation("A requested video exceeded it's upload limit for " + utils.GetTelegramUserString(upd.Message.From))
-						msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Your requested twitter video is too large for me to handle! I can only upload videos up to 50MB")
-						msg.ReplyToMessageID = upd.Message.MessageID
-						bot.Send(msg)
-						return
-					}
-					db.DRIVER.LogError("Couldn't handle a twitter request", utils.GetTelegramUserString(upd.Message.From), err.Error())
-					msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
-					msg.ReplyToMessageID = upd.Message.MessageID
-					bot.Send(msg)
-				}
-			}
-			if rgxTiktok.MatchString(upd.Message.Text) {
+			if utils.RgxTiktok.MatchString(upd.Message.Text) {
 				err = TryCreateUser(upd.Message.From)
 				if err != nil {
 					db.DRIVER.LogError("Error while creating a user", err.Error())
@@ -114,6 +88,21 @@ func InitBot() {
 						return
 					}
 					db.DRIVER.LogError("Couldn't handle a tiktok request", utils.GetTelegramUserString(upd.Message.From), err.Error())
+					msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
+					msg.ReplyToMessageID = upd.Message.MessageID
+					bot.Send(msg)
+				}
+			}
+			if utils.RgxYoutube.MatchString(upd.Message.Text) {
+				err = TryCreateUser(upd.Message.From)
+				if err != nil {
+					db.DRIVER.LogError("Error while creating a user", err.Error())
+				}
+				action := tgbotapi.NewChatAction(upd.Message.Chat.ID, tgbotapi.ChatTyping)
+				bot.Send(action)
+				err = youtube.Handle(upd, bot)
+				if err != nil {
+					db.DRIVER.LogError("Couldn't handle a youtube request", utils.GetTelegramUserString(upd.Message.From), err.Error())
 					msg := tgbotapi.NewMessage(upd.Message.Chat.ID, "Sorry, something went wrong while processing your request. Please try again later")
 					msg.ReplyToMessageID = upd.Message.MessageID
 					bot.Send(msg)

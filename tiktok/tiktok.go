@@ -90,7 +90,7 @@ func (a AwemeItem) URL() (string, error) {
 		return "", err
 	}
 	loc.RawQuery = ""
-	loc.Scheme = "http"
+	loc.Scheme = "https"
 	return loc.String(), nil
 }
 

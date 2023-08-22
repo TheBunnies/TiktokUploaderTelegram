@@ -5,12 +5,18 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"math/rand"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 )
 
 const (
 	DownloadBytesLimit = 52428800
+)
+
+var (
+	RgxTiktok  = regexp.MustCompile(`http(s|):\/\/.*(tiktok).com[^\s]*`)
+	RgxYoutube = regexp.MustCompile(`http(s|):\/\/youtube.com\/shorts\/.*`)
 )
 
 func FileNameWithoutExtension(fileName string) string {
@@ -34,7 +40,7 @@ func GetTelegramUserString(user *tgbotapi.User) string {
 	return fmt.Sprintf("[%d] - %s %s (%s)", user.ID, user.FirstName, user.LastName, user.UserName)
 }
 
-func SanitizeTiktokUrl(url string) string {
+func SanitizeUrl(url string) string {
 	return strings.Split(url, "%20")[0]
 }
 

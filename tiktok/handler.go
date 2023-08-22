@@ -5,18 +5,13 @@ import (
 	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 )
 
-var (
-	rgxTiktok = regexp.MustCompile(`http(s|):\/\/.*(tiktok)\.com.*`)
-)
-
 func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
-	link := utils.TrimURL(rgxTiktok.FindString(update.Message.Text))
-	link = utils.SanitizeTiktokUrl(link)
+	link := utils.TrimURL(utils.RgxTiktok.FindString(update.Message.Text))
+	link = utils.SanitizeUrl(link)
 
 	db.DRIVER.LogInformation("Started processing tiktok request " + link + " by " + utils.GetTelegramUserString(update.Message.From))
 
@@ -32,7 +27,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 	if err != nil {
 		return err
 	}
-	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Request additional info", id)))
 	if data.ImagePostInfo.Images == nil {
@@ -42,7 +37,7 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		}
 
 		video := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(file.Name()))
-		video.ReplyMarkup = numericKeyboard
+		video.ReplyMarkup = keyboard
 		video.ReplyToMessageID = update.Message.MessageID
 		_, err = api.Send(video)
 
@@ -79,12 +74,12 @@ func Handle(update tgbotapi.Update, api *tgbotapi.BotAPI) error {
 		name := audio.Name()
 		if strings.HasSuffix(name, ".mp4") {
 			c := tgbotapi.NewVideo(update.Message.Chat.ID, tgbotapi.FilePath(name))
-			c.ReplyMarkup = numericKeyboard
+			c.ReplyMarkup = keyboard
 			c.ReplyToMessageID = update.Message.MessageID
 			_, err = api.Send(c)
 		} else {
 			c := tgbotapi.NewAudio(update.Message.Chat.ID, tgbotapi.FilePath(name))
-			c.ReplyMarkup = numericKeyboard
+			c.ReplyMarkup = keyboard
 			c.ReplyToMessageID = update.Message.MessageID
 			_, err = api.Send(c)
 		}

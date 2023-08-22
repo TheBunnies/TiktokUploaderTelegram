@@ -1,5 +1,5 @@
 # About 
-Watch your favourite Tiktok and Twitter videos from Telegram directly!
+Watch your favourite Tiktok and YouTube videos from Telegram directly!
 All you have to do is to type a link in whatever chat bot is in
 
 ## Running bot on your Windows PC
