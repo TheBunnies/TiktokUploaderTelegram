@@ -16,7 +16,7 @@ const (
 
 var (
 	RgxTiktok  = regexp.MustCompile(`http(s|):\/\/.*(tiktok).com[^\s]*`)
-	RgxYoutube = regexp.MustCompile(`http(s|):\/\/youtube.com\/shorts\/.*`)
+	RgxYoutube = regexp.MustCompile(`http(s|):\/\/(www.|)youtube.com\/shorts\/.*`)
 )
 
 func FileNameWithoutExtension(fileName string) string {
