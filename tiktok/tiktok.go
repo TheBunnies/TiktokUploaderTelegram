@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const Origin = "https://api16-normal-c-useast1a.tiktokv.com"
+const Origin = "https://api22-normal-c-useast2a.tiktokv.com"
 
 func Parse(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
