@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/TheBunnies/TiktokUploaderTelegram/config"
-	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
-	"github.com/google/uuid"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,9 +11,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/TheBunnies/TiktokUploaderTelegram/config"
+	"github.com/TheBunnies/TiktokUploaderTelegram/utils"
+	"github.com/google/uuid"
 )
 
-const Origin = "https://api22-normal-c-useast2a.tiktokv.com"
+const Origin = "https://api22-normal-c-alisg.tiktokv.com"
 
 func Parse(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
@@ -27,11 +28,19 @@ func NewAwemeItem(id uint64) (*AwemeItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("User-Agent", "com.ss.android.ugc.trill/494+Mozilla/5.0+(Linux;+Android+12;+2112123G+Build/SKQ1.211006.001;+wv)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Version/4.0+Chrome/107.0.5304.105+Mobile+Safari/537.36")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36")
 	req.Header.Add("Accept", "application/json")
 
 	q := req.URL.Query()
 	q.Add("aweme_id", strconv.FormatUint(id, 10))
+	q.Add("os_version", "9")
+	q.Add("device_type", "ASUS_Z01QD")
+	q.Add("device_platform", "android")
+	q.Add("version_code", "300904")
+	q.Add("app_name", "musical_ly")
+	q.Add("channel", "googleplay")
+	q.Add("device_id", "7318517321748022790")
+	q.Add("iid", "7318518857994389254")
 
 	req.URL.RawQuery = q.Encode()
 	cookieOdin := &http.Cookie{
