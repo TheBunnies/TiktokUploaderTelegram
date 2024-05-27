@@ -17,7 +17,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const Origin = "https://api22-normal-c-alisg.tiktokv.com"
+const Origin = "https://api16-normal-c-useast1a.tiktokv.com"
 
 func Parse(id string) (uint64, error) {
 	return strconv.ParseUint(id, 10, 64)
